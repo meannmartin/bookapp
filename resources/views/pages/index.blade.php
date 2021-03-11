@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+    <!--
     <div class="jumbotron text-center">
         <h1>Welcome to Laravel</h1>
         <p>This is the laravel application from "Laravel from Scratch" youtube series</p>
@@ -9,10 +10,9 @@
             <a class="btn btn-success btn-lg" href="/register" role="button">Register</a>
         </p>
 
-    </div>
-
+    </div>  -->
+    
     <div id="app">
-        <example-component></example-component>
-
+        <index-component></index-component>
     </div>
 @endsection
