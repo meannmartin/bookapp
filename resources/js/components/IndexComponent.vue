@@ -254,186 +254,179 @@
 
 
 
-<script>
-    import Datepicker from 'vuejs-datepicker';
-    
+<script>       
     import { required } from 'vuelidate/lib/validators';
 
-    export default {
-        components: {
-		    Datepicker
-	    },
-        
-
-    data () {
-        return {
-            
-            laravelData: {},
-            infoDtl: [],
-            loading: true,
-            errored: false,
-            viewBook: false,
-            editBook: false,
-            addBook: false,
-            saveEdit: false,
-            saveAdd: false,
-            errorDtl: [],
-            msg: [],
-            deleteBook: false,
-            pageNum: 0,
-            totalPage: 0,
-            currentPage: 0,                        
-            title: '',
-            author: '',
-            datepublished: ''
- 
-        }
-    },
-
-    validations: {
-        title: {
-            required
-        },
-        author: {
-            required
-        },
-        datepublished: {
-            required
-        }
-    },
+    export default {               
+        data () {
+            return {
+                
+                laravelData: {},
+                infoDtl: [],
+                loading: true,
+                errored: false,
+                viewBook: false,
+                editBook: false,
+                addBook: false,
+                saveEdit: false,
+                saveAdd: false,
+                errorDtl: [],
+                msg: [],
+                deleteBook: false,
+                pageNum: 0,
+                totalPage: 0,
+                currentPage: 0,                        
+                title: '',
+                author: '',
+                datepublished: ''
     
-    mounted () {
-        //this.getPages();        
-        this.clickCallback();   
-    },
+            }
+        },
 
-    methods: {              
-        getPages: function(){
-                axios.get('api/books/pages?page=1')
-				.then(response => {
-					this.totalPage = response.data.last_page;                    
-				});                
-        },        
-        viewData: function(id) {
-            axios
-            .get('/api/books/' + id)                                
-            .then(response => {                    
-                this.errorMsg = response.data.message,
-                this.infoDtl = response.data.data,
-                this.viewBook = true                            
-            })
-            .catch(error => {
-                console.log(error)
-                this.errored = true
-            })            
+        validations: {
+            title: {
+                required
+            },
+            author: {
+                required
+            },
+            datepublished: {
+                required
+            }
         },
-        editData: function(id) {
-            axios
-            .get('/api/books/' + id)
-            .then(response => {               
-                this.book_id = response.data.data.id,
-                this.title = response.data.data.title,
-                this.author = response.data.data.author,
-                this.datepublished = response.data.data.datepublished,                            
-                this.editBook = true            
-            })
-            .catch(error => {
-                console.log(error)
-                this.errored = true
-            })
+    
+        mounted () {
+            //this.getPages();        
+            this.clickCallback();   
         },
-        submitData: function() {                 
-            axios
-            .post('/api/books/update/' + this.book_id,
-                {
-                    "title": this.title,
-                    "author": this.author,
-                    "datepublished": this.datepublished,
-                    "id": this.book_id,
+
+        methods: {              
+            getPages: function(){
+                    axios.get('api/books/pages?page=1')
+                    .then(response => {
+                        this.totalPage = response.data.last_page;                    
+                    });                
+            },        
+            viewData: function(id) {
+                axios
+                .get('/api/books/' + id)                                
+                .then(response => {                    
+                    this.errorMsg = response.data.message,
+                    this.infoDtl = response.data.data,
+                    this.viewBook = true                            
                 })
-            .then(response => {                             
-                this.clickCallback(this.currentPage);                                                              
-                this.editBook = false;
-                this.viewAllBooks = true;
-                toast.fire({
-                    type: 'success',
-                    title: 'Book edited successfully.'
+                .catch(error => {
+                    console.log(error)
+                    this.errored = true
                 })            
-            })        
-            .catch(error => {
-                console.log(error)
-                this.errored = true
-            })
-        },
-        addData: function() {                       
-                this.book_id = '',
-                this.title = '',
-                this.author = '',
-                this.datepublished = null,                            
-                this.addBook = true                
-        }, 
-        saveData: function() {
-            axios
-            .post('/api/books/store',
-                {
-                    "title": this.title,
-                    "author": this.author,
-                    "datepublished": this.datepublished,
+            },
+            editData: function(id) {
+                axios
+                .get('/api/books/' + id)
+                .then(response => {               
+                    this.book_id = response.data.data.id,
+                    this.title = response.data.data.title,
+                    this.author = response.data.data.author,
+                    this.datepublished = response.data.data.datepublished,                            
+                    this.editBook = true            
                 })
-            .then(response => {          
-                this.clickCallback()                                                             
-                this.addBook = false
-                toast.fire({
-                    type: 'success',
-                    title: 'Book added successfully.'
+                .catch(error => {
+                    console.log(error)
+                    this.errored = true
+                })
+            },
+            submitData: function() {                 
+                axios
+                .post('/api/books/update/' + this.book_id,
+                    {
+                        "title": this.title,
+                        "author": this.author,
+                        "datepublished": this.datepublished,
+                        "id": this.book_id,
+                    })
+                .then(response => {                             
+                    this.clickCallback(this.currentPage);                                                              
+                    this.editBook = false;
+                    this.viewAllBooks = true;
+                    toast.fire({
+                        type: 'success',
+                        title: 'Book edited successfully.'
+                    })            
                 })        
-            })        
-            .catch(error => {
-                console.log(error)
-                this.errored = true
-            })
-        },
-        onSubmit: function() {
-            console.log('Form has been submitted!');
-        },
-        deleteData: function(id) {
-            axios
-            .get('/api/books/' + id)
-            .then(response => {               
-                this.book_id = response.data.data.id,            
-                this.deleteBook = true                 
-            })
-            .catch(error => {
-                console.log(error)
-                this.errored = true
-            })            
-        },
-        delBook: function() {
-            axios
-            .delete('/api/books/' + this.book_id)
-            .then(response => {
-                this.clickCallback()                                                           
-                this.deleteBook = false
-                toast.fire({
-                    type: 'success',
-                    title: 'Book deleted successfully.'
-                })                               
-            })
-            .catch(error => {
-                console.log(error)
-                this.errored = true
-            })
-        },        
-        clickCallback: function(pageNum) {              
-            this.getPages();  
-            this.currentPage = pageNum;                            
-            axios.get('api/books/pages?page=' + pageNum)
-				.then(response => {
-					this.laravelData = response.data;
-			});
-        },        
-    }     
-};
+                .catch(error => {
+                    console.log(error)
+                    this.errored = true
+                })
+            },
+            addData: function() {                       
+                    this.book_id = '',
+                    this.title = '',
+                    this.author = '',
+                    this.datepublished = null,                            
+                    this.addBook = true                
+            }, 
+            saveData: function() {
+                axios
+                .post('/api/books/store',
+                    {
+                        "title": this.title,
+                        "author": this.author,
+                        "datepublished": this.datepublished,
+                    })
+                .then(response => {          
+                    this.clickCallback()                                                             
+                    this.addBook = false
+                    toast.fire({
+                        type: 'success',
+                        title: 'Book added successfully.'
+                    })        
+                })        
+                .catch(error => {
+                    console.log(error)
+                    this.errored = true
+                })
+            },
+            onSubmit: function() {
+                console.log('Form has been submitted!');
+            },
+            deleteData: function(id) {
+                axios
+                .get('/api/books/' + id)
+                .then(response => {               
+                    this.book_id = response.data.data.id,            
+                    this.deleteBook = true                 
+                })
+                .catch(error => {
+                    console.log(error)
+                    this.errored = true
+                })            
+            },
+            delBook: function() {
+                axios
+                .delete('/api/books/' + this.book_id)
+                .then(response => {
+                    this.clickCallback()                                                           
+                    this.deleteBook = false
+                    toast.fire({
+                        type: 'success',
+                        title: 'Book deleted successfully.'
+                    })                               
+                })
+                .catch(error => {
+                    console.log(error)
+                    this.errored = true
+                })
+            },        
+            clickCallback: function(pageNum) {              
+                this.getPages();  
+                this.currentPage = pageNum;                            
+                axios.get('api/books/pages?page=' + pageNum)
+                    .then(response => {
+                        this.laravelData = response.data;
+                });
+            },        
+        }     
+    };
 </script>
 
 <style>
