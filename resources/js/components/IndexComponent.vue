@@ -1,34 +1,54 @@
-<template>
+    <template>
     <div>                   
         <div class="float-left">
-            <h1>Book List</h1>        				
+            <h1>Books</h1>        				
     	</div>
         <div class="float-right">
         	<button type="button" class="btn btn-success"  @click="addData()">
         	Add New Book
         	</button>
     	</div>
-            
-        <div v-if="viewAllBooks">
-            <table width="100%" style="border: 1px solid black;border-collapse: collapse;border-spacing: 5px;padding: 10px">
-                <tr>
-                    <th style="border: 1px solid black;border-collapse: collapse;border-spacing: 5px;padding: 10px;height: 20px;width: 80px;text-align: center">Date Published</th>
-                    <th style="border: 1px solid black;border-collapse: collapse;border-spacing: 5px;padding: 10px;height: 20px;width: 200px;text-align: center">Title</th>
-                    <th style="border: 1px solid black;border-collapse: collapse;border-spacing: 5px;padding: 10px;height: 20px;width: 200px;text-align: center">Author</th>
-                    <th style="border: 1px solid black;border-collapse: collapse;border-spacing: 5px;padding: 10px;height: 20px;width: 200px;text-align: center">Action</th>
-                </tr>
-                <tr v-for="book in info" :key="book.id" class="book-data" style="border: 1px solid black;border-collapse: collapse;border-spacing: 5px;padding: 10px;height: 20px">                
-                    <td style="border: 1px solid black;border-collapse: collapse;border-spacing: 5px;padding: 10px;height: 20px;width: 80px;text-align: center">{{book.datepublished}}</td>
-                    <td style="border: 1px solid black;border-collapse: collapse;border-spacing: 5px;padding: 10px;height: 20px;width: 200px;text-align: center">{{book.title}}</td>
-                    <td style="border: 1px solid black;border-collapse: collapse;border-spacing: 5px;padding: 10px;height: 20px;width: 200px;text-align: center">{{book.author}}</td>
-                    <td style="border: 1px solid black;border-collapse: collapse;border-spacing: 5px;padding: 10px;height: 20px;width: 200px;text-align: center">
-                        <button type="button" name="view" class="btn btn-primary btn-sm view-book" @click="viewData(book.id)">View Details</button>
-                        <button type="button" name="edit" class="btn btn-primary btn-sm edit-book" @click="editData(book.id)">Edit Book</button>
-                        <button type="button" name="delete" class="btn btn-danger btn-sm delete-book" @click="deleteData(book.id)">Delete</button>                                                                                       
-                    </td>                    
-                </tr>
-            </table>
+        <div>                      
+            <table class="table table-striped table-bordered border-primary text-center">
+                <thead>
+                    <tr>
+                        <th>Date Published</th>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Action</th>                         
+                    </tr>
+                </thead>
+                
+                <tbody>
+                    <tr v-for="book in laravelData.data" :key="book.id" >                
+                        <td>{{book.datepublished}}</td>
+                        <td>{{book.title}}</td>
+                        <td>{{book.author}}</td>
+                        <td>
+                            <button type="button" name="view" class="btn btn-primary btn-sm view-book" @click="viewData(book.id)">View Details</button>
+                            <button type="button" name="edit" class="btn btn-primary btn-sm edit-book" @click="editData(book.id)">Edit Book</button>
+                            <button type="button" name="delete" class="btn btn-danger btn-sm delete-book" @click="deleteData(book.id)">Delete</button>                                                                                       
+                        </td>                    
+                    </tr>
+                </tbody>
+                
+            </table>                                              
         </div>  
+        <div class="float-left" >
+            <paginate
+                ref="paginate"                
+                :page-count="this.totalPage"
+                :page-range="3"
+                :margin-pages="2"
+                :click-handler="clickCallback"
+                :prev-text="'Prev'"
+                :next-text="'Next'"
+                :container-class="'pagination'"
+                :page-class="'page-item'"
+                :first-last-button="true">
+            </paginate>
+        </div>
+
 
         <!-- View Detail -->
         <div v-if="viewBook">
@@ -46,6 +66,10 @@
                                     </div>                                    
                                 </div>
                                 <div class="modal-body">
+                                    <div class="form-group">
+                                        <label>Created At:</label>
+                                        <p><b>{{ infoDtl.created_at }}</b></p>                                        
+                                    </div>
                                     <div class="form-group">
                                         <label>Book Title:</label>
                                         <p><b>{{ infoDtl.title }}</b></p>                                        
@@ -86,39 +110,42 @@
                                         <button type="button" class="close float-right" @click="addBook=false" aria-label="Close"><span aria-hidden="true">×</span></button>
                                     </div>                                    
                                 </div>
-                                <div class="modal-body">
-                                    <validation-observer v-slot="{ invalid, handleSubmit }">
-                                    <form @submit.prevent="handleSubmit(onSubmit)">
-                                        <div class="form-group">
-                                            <validation-provider rules="required" v-slot="{ dirty, valid, invalid, errors }">
-                                                <label for="title">Title</label>
-                                                <div class="input-group">
-                                                    <input type="text" id="title" name="title" placeholder="Enter Title" class="form-control" v-model="title" />
-                                                </div>
-                                                <div class="invalid-feedback d-inline-block" v-show="errors">{{ errors[0] }}</div>
-                                            </validation-provider>
-                                        </div>                                    
-                                        <div class="form-group">
-                                            <validation-provider rules="required" v-slot="{ dirty, valid, invalid, errors }">                                        
-                                                <label for="author">Author:</label>
-                                                <div class="input-group">
-                                                    <input type="text" id="author" name="author" placeholder="Enter Author" class="form-control" v-model="author" />
-                                                </div>
-                                                <div class="invalid-feedback d-inline-block" v-show="errors">{{ errors[0] }}</div>
-                                            </validation-provider>
+                                <div class="modal-body">                                    
+                                    <form v-on:submit.prevent="onSubmit()">
+                                         <div class="form-group" :class="{ 'form-group--error': $v.title.$error }">
+                                            <label class="form__label">Title:</label>
+                                            <div>
+                                                <input type="text" class="form-control" v-model.trim="$v.title.$model" @blur="$v.title.$touch()"/>
+                                            </div>
+                                            <div class="error" v-if="!$v.title.required && $v.title.$error">Please enter book title.</div>    
                                         </div>
-                                        <div class="form-group">
-                                            <label class="control-label" for="published_date_edit">Date Published:</label>
-                                            <input type="date" v-model="datepublished" name="published_date" class="form-control hasDatepicker" data-error="Please enter the date when the book was published." required="" autocomplete="off">
-                                            
+
+                                        <div class="form-group" :class="{ 'form-group--error': $v.author.$error }">
+                                            <label class="form__label">Author:</label>
+                                            <div>
+                                                <input type="text" class="form-control" v-model.trim="$v.author.$model"  @blur="$v.author.$touch()"/>
+                                            </div>
+                                            <div class="error" v-if="!$v.author.required  && $v.author.$error">Please enter the name of the author.</div>    
                                         </div>
-                                        
+
+                                        <div class="form-group" :class="{ 'form-group--error': $v.datepublished.$error }">
+                                            <label class="form__label">Date Published:</label>
+                                            <div>
+                                                <b-form-datepicker id="datepublished" v-model.trim="$v.datepublished.$model" class="mb-2" placeholder="Select date published" 
+                                                                :date-format-options="{ year: 'numeric', month: 'numeric', day: 'numeric' }"
+                                                                locale="en"></b-form-datepicker> 
+
+                                                <!--<datepicker :typeable="true" inputClass="form-control" id="datepublished" format="yyyy-MM-dd" :required="true" v-model.trim="$v.datepublished.$model" @blur="$v.datepublished.$touch()"></datepicker>                                                
+                                                -->
+                                            </div>
+                                            <!--<div class="error" v-if="!$v.datepublished.required  && $v.datepublished.$error">Please enter the date when the book was published.</div>    -->
+                                        </div>
                                         <div class="form-group mt-4">
                                             <input type="hidden" v-model="book_id" />    
-                                            <button type="submit" class="btn submit-book-edit btn-success"  @click="saveData()" v-bind:disabled="invalid">Submit</button>
+                                            <button type="submit" class="btn submit-book-edit btn-success"  @click="saveData()" 
+                                                    v-bind:disabled="$v.title.$invalid || $v.author.$invalid || $v.datepublished.$invalid">Submit</button>
                                         </div>      
-                                    </form>    
-                                    </validation-observer>                          
+                                    </form>                                        
                                 </div>
                             </div>
                         </div>
@@ -144,39 +171,41 @@
                                     </div>                                    
                                 </div>
                                 <div class="modal-body">
-                                    <validation-observer v-slot="{ invalid, handleSubmit }">
-                                        <form @submit.prevent="handleSubmit(onSubmit)">
-                                            <div class="form-group">
-                                                <validation-provider rules="required" v-slot="{ dirty, valid, invalid, errors }">
-                                                    <label for="title">Title</label>
-                                                    <div class="input-group">
-                                                        <input type="text" id="title" name="title" placeholder="Enter Title" class="form-control" v-model="title" />
-                                                    </div>
-                                                    <div class="invalid-feedback d-inline-block" v-show="errors">{{ errors[0] }}</div>
-                                                </validation-provider>
-                                            </div>                                    
-                                            <div class="form-group">
-                                                <validation-provider rules="required" v-slot="{ dirty, valid, invalid, errors }">                                        
-                                                    <label for="author">Author:</label>
-                                                    <div class="input-group">
-                                                        <input type="text" id="author" name="author" placeholder="Enter Author" class="form-control" v-model="author" />
-                                                    </div>
-                                                    <div class="invalid-feedback d-inline-block" v-show="errors">{{ errors[0] }}</div>
-                                                </validation-provider>
+                                    <form v-on:submit.prevent="onSubmit()">
+                                         <div class="form-group" :class="{ 'form-group--error': $v.title.$error }">
+                                            <label class="form__label">Title:</label>
+                                            <div>
+                                                <input type="text" class="form-control" v-model.trim="$v.title.$model" @blur="$v.title.$touch()"/>
                                             </div>
-                                            <div class="form-group">
-                                                <label class="control-label" for="published_date_edit">Date Published:</label>
-                                                <input type="date" v-model="datepublished" name="published_date" class="form-control hasDatepicker" data-error="Please enter the date when the book was published." required="" autocomplete="off">
-                                                
+                                            <div class="error" v-if="!$v.title.required && $v.title.$error">Please enter book title.</div>    
+                                        </div>
+
+                                        <div class="form-group" :class="{ 'form-group--error': $v.author.$error }">
+                                            <label class="form__label">Author:</label>
+                                            <div>
+                                                <input type="text" class="form-control" v-model.trim="$v.author.$model"  @blur="$v.author.$touch()"/>
                                             </div>
-                                            
-                                            <div class="form-group mt-4">
-                                                <input type="hidden" v-model="book_id" />    
-                                                <button type="submit" class="btn submit-book-edit btn-success"  @click="submitData()">Submit</button>
+                                            <div class="error" v-if="!$v.author.required  && $v.author.$error">Please enter the name of the author.</div>    
+                                        </div>
+
+                                        <div class="form-group" :class="{ 'form-group--error': $v.datepublished.$error }">
+                                            <label class="form__label">Date Published:</label>
+                                            <div>
+                                                <b-form-datepicker id="datepublished" v-model="datepublished" class="mb-2" placeholder="Select date published" 
+                                                                :date-format-options="{ year: 'numeric', month: 'numeric', day: 'numeric' }"
+                                                                locale="en"></b-form-datepicker> 
+
+                                                <!--<datepicker :typeable="true" inputClass="form-control" id="datepublished" format="yyyy-MM-dd" :required="true" v-model.trim="$v.datepublished.$model" @blur="$v.datepublished.$touch()"></datepicker> -->                                               
                                             </div>
-                                        </form>                                            
-                                    </validation-observer>                    
-                                    
+                                            <!--<div class="error" v-if="!$v.datepublished.required  && $v.datepublished.$error">Please enter the date when the book was published.</div>    -->
+                                        </div>
+                                        <div class="form-group mt-4">
+                                            <input type="hidden" v-model="book_id" />  
+                                            <button type="submit" class="btn submit-book-edit btn-success"  @click="submitData()"  
+                                                    v-bind:disabled="$v.title.$invalid || $v.author.$invalid || $v.datepublished.$invalid">Submit</button>                                            
+                                        </div>      
+                                    </form>
+
                                 </div>
                             </div>
                         </div>
@@ -223,98 +252,97 @@
     </div>                
 </template> 
 
+
+
 <script>
+    import Datepicker from 'vuejs-datepicker';
+    
+    import { required } from 'vuelidate/lib/validators';
 
     export default {
+        components: {
+		    Datepicker
+	    },
+        
+
     data () {
         return {
-            info: [],
+            
+            laravelData: {},
             infoDtl: [],
             loading: true,
             errored: false,
             viewBook: false,
             editBook: false,
-            viewAllBooks: true,
             addBook: false,
             saveEdit: false,
             saveAdd: false,
             errorDtl: [],
             msg: [],
-            deleteBook: false                 
+            deleteBook: false,
+            pageNum: 0,
+            totalPage: 0,
+            currentPage: 0,                        
+            title: '',
+            author: '',
+            datepublished: ''
+ 
+        }
+    },
+
+    validations: {
+        title: {
+            required
+        },
+        author: {
+            required
+        },
+        datepublished: {
+            required
         }
     },
     
     mounted () {
-        axios
-        .get('/api/books')
-
-        .then(response => {
-            this.info = response.data.data
-            // this.success = response.data.success
-        })
-
-        .catch(error => {
-            console.log(error)
-            this.errored = true
-        })
-
-        .finally(() => this.loading = false)
+        //this.getPages();        
+        this.clickCallback();   
     },
 
-    methods: {        
-        displayAll: function(){
+    methods: {              
+        getPages: function(){
+                axios.get('api/books/pages?page=1')
+				.then(response => {
+					this.totalPage = response.data.last_page;                    
+				});                
+        },        
+        viewData: function(id) {
             axios
-            .get('/api/books')
-
-            .then(response => {
-                this.info = response.data.data
-                // this.success = response.data.success
+            .get('/api/books/' + id)                                
+            .then(response => {                    
+                this.errorMsg = response.data.message,
+                this.infoDtl = response.data.data,
+                this.viewBook = true                            
             })
-
             .catch(error => {
                 console.log(error)
                 this.errored = true
-            })
-
-            .finally(() => this.loading = false)
-
-        },
-        viewData: function(id) {
-            axios
-            .get('/api/books/' + id)
-
-            .then(response => {
-               // console.log(response.data.data)
-                this.errorMsg = response.data.message
-                this.infoDtl = response.data.data,
-                this.viewBook = true
-                
-            // this.success = response.data.success
-        })
-        .catch(error => {
-            console.log(error)
-            this.errored = true
-        })
+            })            
         },
         editData: function(id) {
             axios
             .get('/api/books/' + id)
-
-            .then(response => {
-               // console.log(response.data.data)
+            .then(response => {               
                 this.book_id = response.data.data.id,
                 this.title = response.data.data.title,
                 this.author = response.data.data.author,
                 this.datepublished = response.data.data.datepublished,                            
                 this.editBook = true            
-        })
-
-        .catch(error => {
-            console.log(error)
-            this.errored = true
-        })
+            })
+            .catch(error => {
+                console.log(error)
+                this.errored = true
+            })
         },
-        submitData: function() {
+        submitData: function() {                 
             axios
             .post('/api/books/update/' + this.book_id,
                 {
@@ -323,25 +351,26 @@
                     "datepublished": this.datepublished,
                     "id": this.book_id,
                 })
-
-            .then(response => {          
-                this.displayAll();                                                              
+            .then(response => {                             
+                this.clickCallback(this.currentPage);                                                              
                 this.editBook = false;
                 this.viewAllBooks = true;
-            // this.success = response.data.success
-        })        
-
-        .catch(error => {
-            console.log(error)
-            this.errored = true
-        })
+                toast.fire({
+                    type: 'success',
+                    title: 'Book edited successfully.'
+                })            
+            })        
+            .catch(error => {
+                console.log(error)
+                this.errored = true
+            })
         },
         addData: function() {                       
                 this.book_id = '',
                 this.title = '',
                 this.author = '',
                 this.datepublished = null,                            
-                this.addBook = true            
+                this.addBook = true                
         }, 
         saveData: function() {
             axios
@@ -351,29 +380,28 @@
                     "author": this.author,
                     "datepublished": this.datepublished,
                 })
-
             .then(response => {          
-                this.displayAll();                                                              
-                this.addBook = false;
-                this.viewAllBooks = true;
-            // this.success = response.data.success
-        })        
-        .catch(error => {
-            console.log(error)
-            this.errored = true
-        })
+                this.clickCallback()                                                             
+                this.addBook = false
+                toast.fire({
+                    type: 'success',
+                    title: 'Book added successfully.'
+                })        
+            })        
+            .catch(error => {
+                console.log(error)
+                this.errored = true
+            })
         },
         onSubmit: function() {
-        console.log('Form has been submitted!');
-      },
+            console.log('Form has been submitted!');
+        },
         deleteData: function(id) {
             axios
             .get('/api/books/' + id)
-
-            .then(response => {
-               // console.log(response.data.data)
+            .then(response => {               
                 this.book_id = response.data.data.id,            
-                this.deleteBook = true 
+                this.deleteBook = true                 
             })
             .catch(error => {
                 console.log(error)
@@ -384,18 +412,54 @@
             axios
             .delete('/api/books/' + this.book_id)
             .then(response => {
-               this.displayAll();                                                              
-                this.deleteBook = false;
-                this.viewAllBooks = true;
+                this.clickCallback()                                                           
+                this.deleteBook = false
+                toast.fire({
+                    type: 'success',
+                    title: 'Book deleted successfully.'
+                })                               
             })
             .catch(error => {
                 console.log(error)
                 this.errored = true
             })
-
-        } 
-
-
-    }    
+        },        
+        clickCallback: function(pageNum) {              
+            this.getPages();  
+            this.currentPage = pageNum;                            
+            axios.get('api/books/pages?page=' + pageNum)
+				.then(response => {
+					this.laravelData = response.data;
+			});
+        },        
+    }     
 };
 </script>
+
+<style>
+
+
+input {
+  border: 1px solid silver;
+  border-radius: 4px;
+  background: white;
+  padding: 5px 10px;
+}
+
+.dirty {
+  border-color: #5A5;
+  background: #EFE;
+}
+
+.dirty:focus {
+  outline-color: #8E8;
+}
+
+.error {
+  color: red;  
+}
+
+.error:focus {
+  outline-color: #F99;
+}
+</style>

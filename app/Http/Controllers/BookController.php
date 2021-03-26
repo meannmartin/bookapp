@@ -18,7 +18,11 @@ class BookController extends Controller
         ], 200);
     }
 
-
+    public function indexpage()
+    {
+    	$books = Book::orderBy('created_at','desc')->paginate(5);
+    	return response()->json($books);
+    }
 
     //create
     //store   
